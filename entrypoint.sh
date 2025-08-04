@@ -42,9 +42,16 @@ do
     exit 1
   fi
 
-  echo "aptible login failed. Retrying in 5 seconds... (Attempt $ATTEMPT/$INPUT_LOGIN_RETRIES)"
+  SLEEP_TIME=$(( 7 * 2 ** (ATTEMPT - 1) ))
+
+  if [ $SLEEP_TIME -gt 60 ]; then
+    SLEEP_TIME=60
+  fi
+
+  echo "Aptible Loging failed ($ATTEMPT/$INPUT_LOGIN_RETRIES). Retrying in ${SLEEP_TIME} seconds..."
+
+  sleep $SLEEP_TIME
   ATTEMPT=$((ATTEMPT+1))
-  sleep 3
 done
 
 if ! APTIBLE_OUTPUT_FORMAT=json aptible apps | jq -e ".[] | select(.handle == \"$INPUT_APP\") | select(.environment.handle == \"$INPUT_ENVIRONMENT\")" > /dev/null; then
